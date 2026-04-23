@@ -237,8 +237,8 @@ export const products: Product[] = [
   },
 ];
 
-export const PHONE = "+254787723966";
-export const WHATSAPP = "254787723966";
+export const PHONE = "+2547891554697";
+export const WHATSAPP = "2547891554697";
 
 export function whatsappLink(message: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
