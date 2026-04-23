@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
@@ -6,19 +6,29 @@ import { ProductCard } from "@/components/ProductCard";
 import { products, PHONE, whatsappLink } from "@/data/products";
 import { Phone, MessageCircle, ShieldCheck, Truck, Factory } from "lucide-react";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "RMF Europe Tile G28 Price in Kenya | Order Mabati Online" },
+export default function HomePage() {
+  useEffect(() => {
+    document.title = "RMF Europe Tile G28 Price in Kenya | Order Mabati Online";
+    
+    const metaTags = [
       { name: "description", content: "Ruiru Mabati Factory — versatile mabati, box profile, brick tile, Roman tiles & roofing accessories at factory-direct prices in Kenya. Order online via WhatsApp or Call." },
       { property: "og:title", content: "Ruiru Mabati Factory — Order Mabati Online in Kenya" },
       { property: "og:description", content: "Quality mabati roofing sheets in Kenya at factory-direct prices. WhatsApp or call to order." },
-    ],
-  }),
-  component: HomePage,
-});
+    ];
 
-function HomePage() {
+    metaTags.forEach(({ name, property, content }) => {
+      const key = name ? `name="${name}"` : `property="${property}"`;
+      let meta = document.querySelector(`meta[${key}]`);
+      if (!meta) {
+        meta = document.createElement("meta");
+        if (name) meta.setAttribute("name", name);
+        if (property) meta.setAttribute("property", property);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute("content", content);
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

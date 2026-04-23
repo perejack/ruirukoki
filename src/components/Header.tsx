@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router";
 import { Phone } from "lucide-react";
 import { PHONE } from "@/data/products";
 

@@ -1,4 +1,5 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router";
 import { ArrowLeft, MessageCircle, Phone, ShieldCheck, Truck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -6,53 +7,58 @@ import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { getProduct, products, PHONE, whatsappLink, type Product } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
 
-export const Route = createFileRoute("/product/$productId")({
-  loader: ({ params }): { product: Product } => {
-    const product = getProduct(params.productId);
-    if (!product) throw new Error("Product not found");
-    return { product };
-  },
-  head: ({ loaderData }) => {
-    const p = loaderData?.product;
-    if (!p) return { meta: [{ title: "Product not found" }] };
-    const title = `${p.name} — Ksh ${p.price.toLocaleString()} | Ruiru Mabati Factory`;
-    const desc = `${p.name} at Ksh ${p.price.toLocaleString()}. ${p.description.slice(0, 130)}`;
-    return {
-      meta: [
-        { title },
-        { name: "description", content: desc },
-        { property: "og:title", content: title },
-        { property: "og:description", content: desc },
-        { property: "og:image", content: p.image },
-        { name: "twitter:image", content: p.image },
-      ],
-    };
-  },
-  notFoundComponent: NotFound,
-  errorComponent: NotFound,
-  component: ProductPage,
-});
-
-function NotFound() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
-        <h1 className="text-3xl font-bold">Product not found</h1>
-        <p className="mt-2 text-muted-foreground">The item you're looking for is unavailable.</p>
-        <Link to="/" className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground">Back to shop</Link>
-      </div>
-    </div>
-  );
-}
-
 function formatKsh(n: number) {
   return `Ksh ${n.toLocaleString("en-KE", { minimumFractionDigits: 2 })}`;
 }
 
-function ProductPage() {
-  const { product } = Route.useLoaderData();
-  const router = useRouter();
+export default function ProductPage() {
+  const { productId } = useParams<{ productId: string }>();
+  const navigate = useNavigate();
+  const product = productId ? getProduct(productId) : null;
+
+  useEffect(() => {
+    if (product) {
+      const title = `${product.name} — Ksh ${product.price.toLocaleString()} | Ruiru Mabati Factory`;
+      const desc = `${product.name} at Ksh ${product.price.toLocaleString()}. ${product.description.slice(0, 130)}`;
+      document.title = title;
+
+      const metaTags = [
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:image", content: product.image },
+        { name: "twitter:image", content: product.image },
+      ];
+
+      metaTags.forEach(({ name, property, content }) => {
+        const key = name ? `name="${name}"` : `property="${property}"`;
+        let meta = document.querySelector(`meta[${key}]`);
+        if (!meta) {
+          meta = document.createElement("meta");
+          if (name) meta.setAttribute("name", name);
+          if (property) meta.setAttribute("property", property);
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", content);
+      });
+    } else {
+      document.title = "Product not found";
+    }
+  }, [product]);
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+          <h1 className="text-3xl font-bold">Product not found</h1>
+          <p className="mt-2 text-muted-foreground">The item you're looking for is unavailable.</p>
+          <Link to="/" className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground">Back to shop</Link>
+        </div>
+      </div>
+    );
+  }
+
   const related = products.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 4);
 
   const buyMessage = `Hello Ruiru Mabati Factory, I would like to BUY:\n\n• ${product.name}\n• Price: ${formatKsh(product.price)}\n\nPlease share order & delivery details.`;
@@ -66,7 +72,7 @@ function ProductPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <button
-          onClick={() => router.history.back()}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" /> Back
